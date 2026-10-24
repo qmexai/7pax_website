@@ -20,3 +20,9 @@ npm ci
 npm run build
 npm start
 ```
+
+## Deploy to Vercel
+
+Import the repository in Vercel and set **Root Directory** to `Website`. Vercel will detect Next.js and use the included `vercel.json` configuration.
+
+The project does not require environment variables for the enquiry form in its current configuration. Add `NEXT_PUBLIC_SITE_URL` in Vercel when a custom production domain is available, then update the metadata URL in `app/layout.tsx` if the domain differs from `https://7pax.in`.
