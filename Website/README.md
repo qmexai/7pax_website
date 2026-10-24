@@ -4,8 +4,10 @@ Immersive Next.js + Three.js travel website with a cinematic railway station her
 
 ## Run
 
+From the `Website` directory, use Node.js 18.18 or newer and npm:
+
 ```bash
-npm install
+npm ci
 npm run dev
 ```
 
@@ -14,6 +16,7 @@ Open http://localhost:3000
 ## Production
 
 ```bash
+npm ci
 npm run build
 npm start
 ```

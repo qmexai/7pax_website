@@ -1,3 +1,39 @@
 'use client';
-import {useState} from 'react';import {useEffect} from 'react';import {useForm} from 'react-hook-form';import {zodResolver} from '@hookform/resolvers/zod';import {enquirySchema,type Enquiry} from '@/lib/validation';
-export default function ContactSection({selectedPackage}:{selectedPackage:string}){const [status,setStatus]=useState('');const {register,handleSubmit,reset,setValue,watch,formState:{errors}}=useForm<Enquiry>({resolver:zodResolver(enquirySchema),defaultValues:{packageId:selectedPackage,travellerCount:1}});useEffect(()=>{setValue('packageId',selectedPackage) },[selectedPackage,setValue]);const submit=async(data:Enquiry)=>{setStatus('Sending…');const r=await fetch('/api/enquiry',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});const j=await r.json();setStatus(j.message||'Please check the form.');if(r.ok)reset()};const whatsapp=()=>{const values=document.querySelector('form') as HTMLFormElement|null; const fd=values?new FormData(values):null; const msg=`7PAX travel enquiry%0AName: ${encodeURIComponent(String(fd?.get('fullName')||''))}%0APhone: ${encodeURIComponent(String(fd?.get('phone')||''))}%0AEmail: ${encodeURIComponent(String(fd?.get('email')||''))}%0ADestination/package: ${encodeURIComponent(String(fd?.get('packageId')||selectedPackage))}%0ATravel date: ${encodeURIComponent(String(fd?.get('travelDate')||''))}%0ATravellers: ${encodeURIComponent(String(fd?.get('travellerCount')||''))}%0AMessage: ${encodeURIComponent(String(fd?.get('message')||''))}`;window.open(`https://wa.me/?text=${msg}`,'_blank')};return <section id="contact" className="section bg-slate-50"><div className="container-x grid md:grid-cols-[.8fr_1.2fr] gap-12"><div><div className="eyebrow">Travel enquiry</div><h2 className="section-title mt-4">Let’s begin with the journey you have in mind.</h2><p className="text-slate-600 mt-6">Share a few details and choose how you’d like to send your enquiry. No payment is taken here.</p><div className="flex gap-3 mt-7"><button className="btn btn-dark" onClick={handleSubmit(submit)}>Send by Email ↗</button><button className="btn" onClick={whatsapp}>Send by WhatsApp ↗</button></div>{status&&<p className="mt-5 text-sm">{status}</p>}</div><form className="grid grid-cols-1 md:grid-cols-2 gap-4 card p-6" onSubmit={handleSubmit(submit)}>{[['fullName','FULL NAME','Enter details'],['email','EMAIL ADDRESS','Enter details'],['travelDate','TRAVEL DATE','Enter details'],['phone','PHONE / WHATSAPP','Enter details']].map(([name,label,ph])=><label key={name} className="text-xs tracking-widest">{label}<input className="field mt-2 normal-case tracking-normal" type={name==='email'?'email':name==='travelDate'?'date':'text'} placeholder={ph} {...register(name as keyof Enquiry)}/>{errors[name as keyof Enquiry]&&<span className="block text-red-700 mt-1 normal-case tracking-normal">{String(errors[name as keyof Enquiry]?.message)}</span>}</label>)}<label className="text-xs tracking-widest">DESTINATION / PACKAGE<select className="field mt-2 normal-case tracking-normal" {...register('packageId')}><option value="">Choose</option><option value="coastal-escape">Coastal Escape</option><option value="mountain-journey">Mountain Journey</option><option value="cultural-discovery">Cultural Discovery</option></select></label><label className="text-xs tracking-widest">TRAVELLER COUNT<input className="field mt-2 normal-case tracking-normal" type="number" min="1" max="50" {...register('travellerCount')}/></label><label className="md:col-span-2 text-xs tracking-widest">MESSAGE / REQUESTS<textarea className="field mt-2 normal-case tracking-normal min-h-32" placeholder="Tell us what would make this journey right for you…" {...register('message')}/></label><button className="btn btn-dark md:col-span-2" type="submit">Submit Enquiry</button></form></div></section>}
+
+import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { enquirySchema, type Enquiry } from '@/lib/validation';
+
+export default function ContactSection() {
+  const [status, setStatus] = useState('');
+  const { register, handleSubmit, reset, formState: { errors } } = useForm<Enquiry>({ resolver: zodResolver(enquirySchema) });
+
+  const submit = async (data: Enquiry) => {
+    setStatus('Sending your enquiry...');
+    const response = await fetch('/api/enquiry', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
+    const result = await response.json();
+    setStatus(result.message || 'Please check the form and try again.');
+    if (response.ok) reset();
+  };
+
+  return (
+    <section id="contact" className="section bg-slate-50">
+      <div className="container-x grid md:grid-cols-[.8fr_1.2fr] gap-12">
+        <div>
+          <div className="eyebrow">Travel enquiry</div>
+          <h2 className="section-title mt-4">Tell us what kind of journey you are looking for.</h2>
+          <p className="text-slate-600 mt-6">Share your ideas, preferences or questions. Our team will get back to you with thoughtful next steps.</p>
+          {status && <p className="mt-5 text-sm font-semibold text-[#081325]" role="status">{status}</p>}
+        </div>
+        <form className="contact-form grid grid-cols-1 md:grid-cols-2 gap-4 card p-6" onSubmit={handleSubmit(submit)}>
+          <label className="text-xs tracking-widest">FULL NAME<input className="field mt-2 normal-case tracking-normal" type="text" placeholder="Your name" {...register('fullName')} />{errors.fullName && <span className="block text-red-700 mt-1 normal-case tracking-normal">{errors.fullName.message}</span>}</label>
+          <label className="text-xs tracking-widest">PHONE / WHATSAPP<input className="field mt-2 normal-case tracking-normal" type="tel" placeholder="Your contact number" {...register('phone')} />{errors.phone && <span className="block text-red-700 mt-1 normal-case tracking-normal">{errors.phone.message}</span>}</label>
+          <label className="md:col-span-2 text-xs tracking-widest">EMAIL ADDRESS<input className="field mt-2 normal-case tracking-normal" type="email" placeholder="you@example.com" {...register('email')} />{errors.email && <span className="block text-red-700 mt-1 normal-case tracking-normal">{errors.email.message}</span>}</label>
+          <label className="md:col-span-2 text-xs tracking-widest">YOUR ENQUIRY<textarea className="field mt-2 normal-case tracking-normal min-h-40" placeholder="Tell us where you would like to go, when you would like to travel, or what you need help planning..." {...register('message')} />{errors.message && <span className="block text-red-700 mt-1 normal-case tracking-normal">{errors.message.message}</span>}</label>
+          <button className="btn btn-primary md:col-span-2" type="submit">SEND ENQUIRY ↗</button>
+        </form>
+      </div>
+    </section>
+  );
+}
